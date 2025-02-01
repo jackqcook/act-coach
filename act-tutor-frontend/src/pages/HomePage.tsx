@@ -18,7 +18,9 @@ const HomePage: React.FC = () => {
             We are a group of college kids majoring in Machine Learning and Artificial Intelligence...
           </p>
         </section>
-        <Link to="/profile" className="profile-link">Go to Profile</Link>
+        <div className="profile-section">
+          <Link to="/profile" className="profile-link">Go to Profile</Link>
+        </div>
       </main>
     </div>
   );

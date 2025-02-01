@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import './ProfilePage.scss';
 
 const ProfilePage: React.FC = () => {
@@ -21,40 +22,57 @@ const ProfilePage: React.FC = () => {
         <h1>My Profile</h1>
         <nav>
           <ul>
-            <li>Details</li>
+            <li><Link to="/test">Practice</Link></li>
             <li>Posts</li>
             <li>Contacts</li>
             <li>Improve</li>
           </ul>
         </nav>
       </header>
-      <main>
-        <div className="profile-summary">
-          <div className="profile-card">
-            <img src="path/to/profile.jpg" alt="Profile" />
-            <h2>{profile.name}</h2>
-            <p>{profile.title}</p>
-            <div className="connections">
-              <p>{profile.connections} Connections</p>
-              <p>{profile.views} Views</p>
+      <div className="profile-content">
+        <aside className="profile-card">
+          <img src="path/to/profile.jpg" alt="Profile" />
+          <h2>{profile.name}</h2>
+          <p className="title">{profile.title}</p>
+          <div className="connections">
+            <div className="connection-stat">
+              <span className="stat-number">{profile.connections}</span>
+              <span className="stat-label">Connections</span>
+            </div>
+            <div className="connection-stat">
+              <span className="stat-number">{profile.views}</span>
+              <span className="stat-label">Views</span>
             </div>
           </div>
-          <div className="stats">
-            <h3>My Stats</h3>
-            <p>{profile.views} Views</p>
-            <p>{profile.visitors} Visitors</p>
-            {/* Add a chart or graph here */}
+        </aside>
+        
+        <main className="main-content">
+          <div className="top-section">
+            <div className="stats">
+              <h3>My Stats</h3>
+              <div className="stat-item">
+                <span className="stat-label">Views</span>
+                <span className="stat-value">{profile.views}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Visitors</span>
+                <span className="stat-value">{profile.visitors}</span>
+              </div>
+              {/* Add more stats as needed */}
+            </div>
+            
+            <div className="summary">
+              <h3>Summary</h3>
+              <p>{profile.summary}</p>
+            </div>
           </div>
-        </div>
-        <section className="summary">
-          <h3>Summary</h3>
-          <p>{profile.summary}</p>
-        </section>
-        <section className="experience">
-          <h3>Experience</h3>
-          <p>{profile.experience}</p>
-        </section>
-      </main>
+          
+          <section className="experience">
+            <h3>Experience</h3>
+            <p>{profile.experience}</p>
+          </section>
+        </main>
+      </div>
     </div>
   );
 };

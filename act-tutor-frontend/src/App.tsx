@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import ProfilePage from './pages/ProfilePage';
+import TestPage from './pages/TestPage';
 import './App.css';
 
 const App: React.FC = () => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/test" element={<TestPage />} />
           </Routes>
         </div>
       </div>
