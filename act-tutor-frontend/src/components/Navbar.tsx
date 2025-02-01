@@ -9,7 +9,7 @@ const Navbar: React.FC = () => {
         <Link to="/" className="logo">Test Prep</Link>
       </div>
       <div className="navbar-right">
-        <Link to="/practice">Practice Tests</Link>
+        <Link to="/test">Practice Tests</Link>
         <Link to="/contact">Contact Us</Link>
         <button className="sign-in">Sign In</button>
       </div>
