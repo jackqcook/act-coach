@@ -1,10 +1,25 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import './HomePage.scss';
 
 const HomePage: React.FC = () => {
   return (
-    <div>
-      <h1>Welcome to the ACT Tutor</h1>
-      <p>This is the homepage of your ACT tutoring application.</p>
+    <div className="homepage">
+      <main>
+        <h2>Artificial Intelligence ACT tutoring designed to help YOU succeed</h2>
+        <button className="browse-plans">Browse our plans</button>
+        <div className="images">
+          <img src="path/to/image1.jpg" alt="Student studying" />
+          <img src="path/to/image2.jpg" alt="Study materials" />
+        </div>
+        <section className="about">
+          <h3>About Us</h3>
+          <p>
+            We are a group of college kids majoring in Machine Learning and Artificial Intelligence...
+          </p>
+        </section>
+        <Link to="/profile" className="profile-link">Go to Profile</Link>
+      </main>
     </div>
   );
 };
