@@ -1,232 +1,237 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './TestPage.scss';
+import React, { useState, useCallback } from 'react';
+import { useDatabase } from '../hooks/useDatabase';
 
+// Define types for better type safety
 interface Question {
   id: number;
-  section: string;
-  questionText: string;
-  passage?: string;
+  question_text: string;
   options: string[];
-  correctAnswer: string;
+  correct_answer: string;
+  category: string;
 }
 
-interface TestSetup {
-  section: string;
+interface TestConfig {
+  category: string;
   questionCount: number;
-  difficulty: string;
 }
+
+interface TestState {
+  questions: Question[];
+  answers: Record<number, string>;
+  isSubmitted: boolean;
+  score?: number;
+}
+
+const CATEGORIES = ['math', 'geography', 'reading', 'science'];
+const QUESTION_COUNTS = [5, 10, 15, 20, 25];
 
 const TestPage: React.FC = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string }>({});
-  const [timeRemaining, setTimeRemaining] = useState(3600); // 60 minutes in seconds
-  const [isTestActive, setIsTestActive] = useState(false);
-  const [showSetup, setShowSetup] = useState(true);
-  const [testSetup, setTestSetup] = useState<TestSetup>({
-    section: 'math',
-    questionCount: 10,
-    difficulty: 'medium'
+  // Configuration state
+  const [isConfiguring, setIsConfiguring] = useState(true);
+  const [config, setConfig] = useState<TestConfig>({
+    category: '',
+    questionCount: QUESTION_COUNTS[0],
   });
 
-  // Fetch questions from the database with filters
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const response = await axios.get('/api/questions', {
-          params: {
-            section: testSetup.section,
-            count: testSetup.questionCount,
-            difficulty: testSetup.difficulty
-          }
-        });
-        setQuestions(response.data);
-      } catch (error) {
-        console.error('Error fetching questions:', error);
-      }
-    };
+  // Test state
+  const [testState, setTestState] = useState<TestState>({
+    questions: [],
+    answers: {},
+    isSubmitted: false,
+  });
 
-    if (isTestActive) {
-      fetchQuestions();
-    }
-  }, [isTestActive, testSetup]);
+  const { getQuestions } = useDatabase();
 
-  // Timer logic
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isTestActive && timeRemaining > 0) {
-      timer = setInterval(() => {
-        setTimeRemaining((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isTestActive, timeRemaining]);
-
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  // Handle configuration changes
+  const handleConfigChange = (field: keyof TestConfig, value: string | number) => {
+    setConfig(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAnswerSelect = (answer: string) => {
-    setSelectedAnswers({
-      ...selectedAnswers,
-      [currentQuestionIndex]: answer,
-    });
-  };
+  // Generate test based on configuration
+  const handleStartTest = async () => {
+    try {
+      const allQuestions = await getQuestions(config.category);
+      // Randomly select questions based on questionCount
+      const selectedQuestions = [...allQuestions]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, config.questionCount);
 
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setTestState({
+        questions: selectedQuestions,
+        answers: {},
+        isSubmitted: false,
+      });
+      setIsConfiguring(false);
+    } catch (error) {
+      console.error('Error generating test:', error);
     }
   };
 
-  const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+  // Handle answer selection
+  const handleAnswerSelect = (questionId: number, answer: string) => {
+    if (!testState.isSubmitted) {
+      setTestState(prev => ({
+        ...prev,
+        answers: { ...prev.answers, [questionId]: answer },
+      }));
     }
   };
 
-  const handleSetupSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowSetup(false);
-    setIsTestActive(true);
-  };
+  // Handle test submission
+  const handleSubmitTest = () => {
+    const score = testState.questions.reduce((acc, question) => {
+      return acc + (testState.answers[question.id] === question.correct_answer ? 1 : 0);
+    }, 0);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTestSetup(prev => ({
+    setTestState(prev => ({
       ...prev,
-      [name]: name === 'questionCount' ? parseInt(value) : value
+      isSubmitted: true,
+      score,
     }));
   };
 
-  const submitTest = () => {
-    setIsTestActive(false);
-    // Add logic to submit answers to backend
+  // Reset test to configuration screen
+  const handleReset = () => {
+    setIsConfiguring(true);
+    setTestState({
+      questions: [],
+      answers: {},
+      isSubmitted: false,
+    });
   };
 
-  if (showSetup) {
+  if (isConfiguring) {
     return (
-      <div className="test-page">
-        <div className="test-header">
-          <h1>ACT Practice Test</h1>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-6">Configure Your ACT Practice Test</h1>
+        
+        <div className="space-y-4 mb-6">
+          <div>
+            <label className="block mb-2">Select Category:</label>
+            <select
+              className="w-full p-2 border rounded"
+              value={config.category}
+              onChange={(e) => handleConfigChange('category', e.target.value)}
+            >
+              <option value="">All Categories</option>
+              {CATEGORIES.map(category => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block mb-2">Number of Questions:</label>
+            <select
+              className="w-full p-2 border rounded"
+              value={config.questionCount}
+              onChange={(e) => handleConfigChange('questionCount', Number(e.target.value))}
+            >
+              {QUESTION_COUNTS.map(count => (
+                <option key={count} value={count}>{count} Questions</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div className="test-setup">
-          <h2>Test Setup</h2>
-          <form onSubmit={handleSetupSubmit}>
-            <div className="form-group">
-              <label htmlFor="section">Select Section:</label>
-              <select
-                id="section"
-                name="section"
-                value={testSetup.section}
-                onChange={handleInputChange}
-              >
-                <option value="math">Mathematics</option>
-                <option value="english">English</option>
-                <option value="reading">Reading</option>
-                <option value="science">Science</option>
-              </select>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="questionCount">Number of Questions:</label>
-              <input
-                type="number"
-                id="questionCount"
-                name="questionCount"
-                min="1"
-                max="60"
-                value={testSetup.questionCount}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="difficulty">Difficulty Level:</label>
-              <select
-                id="difficulty"
-                name="difficulty"
-                value={testSetup.difficulty}
-                onChange={handleInputChange}
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
-
-            <button type="submit" className="start-button">Start Test</button>
-          </form>
-        </div>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={handleStartTest}
+        >
+          Start Test
+        </button>
       </div>
     );
   }
 
-  if (!isTestActive || questions.length === 0) {
-    return <div>Loading questions...</div>;
-  }
-
-  const currentQuestion = questions[currentQuestionIndex];
-
   return (
-    <div className="test-page">
-      <div className="test-header">
-        <h1>ACT Practice Test - {testSetup.section.toUpperCase()}</h1>
-        <div className="timer">Time Remaining: {formatTime(timeRemaining)}</div>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">
+          ACT Practice Test
+          {testState.isSubmitted && testState.score !== undefined && (
+            <span className="ml-4">
+              Score: {testState.score} / {testState.questions.length}
+              ({((testState.score / testState.questions.length) * 100).toFixed(1)}%)
+            </span>
+          )}
+        </h1>
+        <button
+          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          onClick={handleReset}
+        >
+          New Test
+        </button>
       </div>
 
-      <div className="test-content">
-        <div className="question-navigation">
-          <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-          <div className="navigation-buttons">
-            <button onClick={handlePreviousQuestion} disabled={currentQuestionIndex === 0}>
-              Previous
-            </button>
-            <button onClick={handleNextQuestion} disabled={currentQuestionIndex === questions.length - 1}>
-              Next
-            </button>
-          </div>
-        </div>
-
-        <div className="question-container">
-          {currentQuestion.passage && (
-            <div className="passage-section">
-              <h3>Passage</h3>
-              <div className="passage-content">{currentQuestion.passage}</div>
-            </div>
-          )}
-
-          <div className="question-section">
-            <h3>Question</h3>
-            <p>{currentQuestion.questionText}</p>
-            
-            <div className="options">
-              {currentQuestion.options.map((option, index) => (
-                <label key={index} className="option">
+      <div className="space-y-6">
+        {testState.questions.map((q, index) => (
+          <div
+            key={q.id}
+            className="p-4 border rounded shadow-sm"
+          >
+            <h3 className="font-bold mb-3">
+              {index + 1}. {q.question_text}
+            </h3>
+            <div className="space-y-2">
+              {q.options.map((option, idx) => (
+                <div key={idx} className="flex items-center">
                   <input
                     type="radio"
-                    name={`question-${currentQuestionIndex}`}
-                    checked={selectedAnswers[currentQuestionIndex] === option}
-                    onChange={() => handleAnswerSelect(option)}
+                    id={`q${q.id}-${idx}`}
+                    name={`question-${q.id}`}
+                    value={option}
+                    checked={testState.answers[q.id] === option}
+                    onChange={() => handleAnswerSelect(q.id, option)}
+                    disabled={testState.isSubmitted}
+                    className="mr-2"
                   />
-                  <span>{option}</span>
-                </label>
+                  <label
+                    htmlFor={`q${q.id}-${idx}`}
+                    className={
+                      testState.isSubmitted
+                        ? option === q.correct_answer
+                          ? 'text-green-600'
+                          : testState.answers[q.id] === option
+                          ? 'text-red-600'
+                          : ''
+                        : ''
+                    }
+                  >
+                    {option}
+                  </label>
+                </div>
               ))}
             </div>
+            {testState.isSubmitted && (
+              <div className="mt-2 text-sm">
+                {testState.answers[q.id] === q.correct_answer ? (
+                  <span className="text-green-600">Correct!</span>
+                ) : (
+                  <span className="text-red-600">
+                    Incorrect. Correct answer: {q.correct_answer}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
-        </div>
+        ))}
+      </div>
 
-        {currentQuestionIndex === questions.length - 1 && (
-          <button className="submit-button" onClick={submitTest}>
+      {!testState.isSubmitted && testState.questions.length > 0 && (
+        <div className="mt-6">
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            onClick={handleSubmitTest}
+          >
             Submit Test
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default TestPage; 
+export default TestPage;

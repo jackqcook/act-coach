@@ -1,108 +1,55 @@
-import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { useCallback } from 'react';
+
+// Mock data with more questions and categories
+const mockQuestions = [
+  {
+    id: 1,
+    question_text: "What is 2 + 2?",
+    options: ["3", "4", "5", "6"],
+    correct_answer: "4",
+    category: "math"
+  },
+  {
+    id: 2,
+    question_text: "What is the capital of France?",
+    options: ["London", "Berlin", "Paris", "Madrid"],
+    correct_answer: "Paris",
+    category: "geography"
+  },
+  {
+    id: 3,
+    question_text: "What is the main idea of this passage?",
+    options: [
+      "The author's childhood",
+      "The importance of education",
+      "The history of literature",
+      "The impact of technology"
+    ],
+    correct_answer: "The importance of education",
+    category: "reading"
+  },
+  {
+    id: 4,
+    question_text: "What is the atomic number of Hydrogen?",
+    options: ["1", "2", "3", "4"],
+    correct_answer: "1",
+    category: "science"
+  },
+  // Add more questions as needed
+];
 
 export const useDatabase = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<any>(null);
-
-  // Get all questions
-  const getQuestions = async (category?: string) => {
-    setLoading(true);
-    try {
-      let query = supabase.from('questions').select('*');
-      
-      if (category) {
-        query = query.eq('category', category);
-      }
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      
-      return data;
-    } catch (err) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
+  const getQuestions = useCallback(async (category?: string) => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (category) {
+      return mockQuestions.filter(q => q.category === category);
     }
-  };
-
-  // Start a new test
-  const createTest = async (userId: string) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('tests')
-        .insert([{
-          user_id: userId,
-          start_time: new Date().toISOString(),
-          score: {}
-        }])
-        .select();
-
-      if (error) throw error;
-      return data[0];
-    } catch (err) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Save a user's response
-  const saveResponse = async (testId: number, questionId: number, answer: string, isCorrect: boolean) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('user_responses')
-        .insert([{
-          test_id: testId,
-          question_id: questionId,
-          user_answer: answer,
-          is_correct: isCorrect
-        }])
-        .select();
-
-      if (error) throw error;
-      return data[0];
-    } catch (err) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Get user's test history
-  const getUserTests = async (userId: string) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('tests')
-        .select(`
-          *,
-          user_responses (*)
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+    return mockQuestions;
+  }, []);
 
   return {
-    loading,
-    error,
-    getQuestions,
-    createTest,
-    saveResponse,
-    getUserTests
+    getQuestions
   };
 };
