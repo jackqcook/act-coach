@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './Navbar.scss';
 
 const Navbar: React.FC = () => {
+  const { user } = useAuth();
+  
   return (
     <nav className="main-navbar">
       <div className="navbar-left">
@@ -12,7 +15,15 @@ const Navbar: React.FC = () => {
         <Link to="/test">Practice Tests</Link>
         <Link to="/contact">Contact Us</Link>
         <Link to="/Profile">My Profile</Link>
-        <button className="sign-in">Sign In</button>
+        {user ? (
+          <>
+            <Link to="/about">About</Link>
+            <Link to="/contact">Contact</Link>
+            <Link to="/profile">Profile</Link>
+          </>
+        ) : (
+          <Link to="/auth">Sign In</Link>
+        )}
       </div>
     </nav>
   );

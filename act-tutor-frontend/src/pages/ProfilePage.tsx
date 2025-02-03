@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import './ProfilePage.scss';
+import { useAuth } from '../contexts/AuthContext';
 
 const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
+  const { signOut, user } = useAuth();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -13,6 +15,14 @@ const ProfilePage: React.FC = () => {
     };
     fetchProfile();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
 
   if (!profile) return <div>Loading...</div>;
 
@@ -73,6 +83,8 @@ const ProfilePage: React.FC = () => {
           </section>
         </main>
       </div>
+      <p>Welcome, {user?.email}</p>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 };
