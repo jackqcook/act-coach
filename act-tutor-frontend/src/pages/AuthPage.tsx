@@ -21,12 +21,35 @@ export default function Auth() {
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    // Attempt to log in with email & password
+    const { error, data: sessionData } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       alert(error.message)
+      setLoading(false)
+      return
     } else {
       alert('Login successful!')
-      navigate('/')
+      // Extract the logged in user
+      const loggedInUser = sessionData.session?.user
+      if (loggedInUser) {
+        // Query the "profile" table to see if a record exists for the user
+        const { data, error: profileError } = await supabase
+          .from('profile')
+          .select('*')
+          .eq('id', loggedInUser.id)
+          .single()
+
+        // If there's an error or no profile data, direct them to complete their profile
+        if (profileError || !data) {
+          navigate('/complete-profile')
+        } else {
+          // Otherwise, go to the home page
+          navigate('/')
+        }
+      } else {
+        alert('No user found in session.')
+      }
     }
     setLoading(false)
   }
@@ -34,7 +57,8 @@ export default function Auth() {
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoading(true)
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { error, data } = await supabase.auth.signUp({ email, password })
+    console.log('Sign up response:', { error, data })
     if (error) {
       alert(error.message)
     } else {

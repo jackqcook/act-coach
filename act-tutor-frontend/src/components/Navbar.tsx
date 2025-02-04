@@ -12,12 +12,11 @@ const Navbar: React.FC = () => {
         <Link to="/" className="logo">Test Prep</Link>
       </div>
       <div className="navbar-right">
-        <Link to="/test">Practice Tests</Link>
+        <Link to="/about">About</Link>
         <Link to="/contact">Contact Us</Link>
-        <Link to="/Profile">My Profile</Link>
         {user ? (
           <>
-            <Link to="/about">About</Link>
+            <Link to="/test">Practice Tests</Link>
             <Link to="/contact">Contact</Link>
             <Link to="/profile">Profile</Link>
           </>

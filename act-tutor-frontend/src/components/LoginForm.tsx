@@ -15,7 +15,7 @@ export const LoginForm = () => {
     
     try {
       await signInWithPassword(email, password)
-      navigate('/profile') // Redirect after successful login
+      navigate('/complete-profile') // Redirect after successful login
     } catch (error) {
       setError('Failed to sign in')
       console.error(error)
