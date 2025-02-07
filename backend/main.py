@@ -22,3 +22,5 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 @app.get("/")
 async def read_root():
     return {"status": "healthy"}
+
+#adding in comment for pull request
