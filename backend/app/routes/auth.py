@@ -38,3 +38,21 @@ async def logout():
         return {"message": "Successfully logged out"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/verify")
+async def verify_token():
+    """Verify the current user's token"""
+    try:
+        session = supabase.auth.get_session()
+        if session.session:
+            return {
+                "user": {
+                    "id": session.session.user.id,
+                    "email": session.session.user.email
+                },
+                "message": "Token is valid"
+            }
+        raise HTTPException(status_code=401, detail="No valid session found")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
