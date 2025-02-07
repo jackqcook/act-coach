@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { apiService } from '../services/api.service'
+import { useAuth } from '../contexts/AuthContext'
 import './AuthPage.scss'
 
 export default function Auth() {
@@ -8,75 +9,51 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState<any>(null)
-
+  const { user, signInWithPassword, signUp, signOut } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-    })
-  }, [])
+    if (user) {
+      navigate('/')
+    }
+  }, [user, navigate])
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoading(true)
-
-    // Attempt to log in with email & password
-    const { error, data: sessionData } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
+    try {
+      await signInWithPassword(email, password)
+      navigate('/')
+    } catch (error: any) {
       alert(error.message)
+    } finally {
       setLoading(false)
-      return
-    } else {
-      alert('Login successful!')
-      // Extract the logged in user
-      const loggedInUser = sessionData.session?.user
-      if (loggedInUser) {
-        // Query the "profile" table to see if a record exists for the user
-        const { data, error: profileError } = await supabase
-          .from('profile')
-          .select('*')
-          .eq('id', loggedInUser.id)
-          .single()
-
-        // If there's an error or no profile data, direct them to complete their profile
-        if (profileError || !data) {
-          navigate('/complete-profile')
-        } else {
-          // Otherwise, go to the home page
-          navigate('/')
-        }
-      } else {
-        alert('No user found in session.')
-      }
     }
-    setLoading(false)
   }
 
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoading(true)
-    const { error, data } = await supabase.auth.signUp({ email, password })
-    console.log('Sign up response:', { error, data })
-    if (error) {
+    try {
+      await signUp(email, password)
+      alert('Sign up successful. Check your email for confirmation!')
+    } catch (error: any) {
       alert(error.message)
-    } else {
-      alert('Sign up successful. Check your email for the confirmation link!')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const handleSignOut = async () => {
     setLoading(true)
-    const { error } = await supabase.auth.signOut()
-    if (error) {
+    try {
+      await signOut()
+      navigate('/auth')
+    } catch (error: any) {
       alert(error.message)
-    } else {
-      setUser(null)
-      alert('Sign out successful!')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   if (user) {

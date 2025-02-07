@@ -1,17 +1,20 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { User } from '@supabase/supabase-js'
-import { authService } from '../services/auth.service'
-import { supabase } from '../lib/supabaseClient'
+import { apiService } from '../services/api.service'
+
+interface User {
+  id: string
+  email: string
+  // Add other user properties you need
+}
 
 interface AuthContextType {
   user: User | null
   loading: boolean
   error: string | null
   signInWithPassword: (email: string, password: string) => Promise<void>
-  signInWithOtp: (email: string) => Promise<void>
+  signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }
-
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
@@ -21,52 +24,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check active sessions
-    authService.getCurrentSession()
-      .then(({ data: { session } }) => {
-        setUser(session?.user ?? null)
+    // Check if user is logged in on mount
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (token) {
+          // Verify token with backend
+          const response = await apiService.verifyToken()
+          setUser(response.data.user)
+        }
+      } catch (err) {
+        localStorage.removeItem('token')
+      } finally {
         setLoading(false)
-      })
-      .catch((err) => {
-        setError(err.message || 'Error fetching session')
-        setLoading(false)
-      })
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
+      }
+    }
+    
+    checkAuth()
   }, [])
 
-  // Create wrappers for the auth methods to handle errors explicitly.
   const handleSignInWithPassword = async (email: string, password: string): Promise<void> => {
     try {
-      await authService.signInWithPassword(email, password)
+      const response = await apiService.login({ email, password })
+      setUser(response.data.user)
+      localStorage.setItem('token', response.data.token)
       setError(null)
     } catch (err: any) {
-      setError(err.message || 'Sign in failed')
+      setError(err.response?.data?.detail || 'Sign in failed')
       throw err
     }
   }
 
-  const handleSignInWithOtp = async (email: string): Promise<void> => {
+  const handleSignUp = async (email: string, password: string): Promise<void> => {
     try {
-      await authService.signInWithOtp(email)
+      const response = await apiService.signup({ email, password })
+      setUser(response.data.user)
+      localStorage.setItem('token', response.data.token)
       setError(null)
     } catch (err: any) {
-      setError(err.message || 'Sign in with OTP failed')
+      setError(err.response?.data?.detail || 'Sign up failed')
       throw err
     }
   }
 
   const handleSignOut = async (): Promise<void> => {
     try {
-      await authService.signOut()
+      await apiService.logout()
+      setUser(null)
+      localStorage.removeItem('token')
       setError(null)
     } catch (err: any) {
-      setError(err.message || 'Sign out failed')
+      setError(err.response?.data?.detail || 'Sign out failed')
       throw err
     }
   }
@@ -77,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       error,
       signInWithPassword: handleSignInWithPassword,
-      signInWithOtp: handleSignInWithOtp,
+      signUp: handleSignUp,
       signOut: handleSignOut
     }}>
       {!loading && children}

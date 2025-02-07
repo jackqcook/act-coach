@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+import { apiService } from '../services/api.service';
 import './CompleteProfilePage.scss'; // Create this file for your page-specific styles
 
 const CompleteProfilePage: React.FC = () => {
@@ -26,26 +26,20 @@ const CompleteProfilePage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-
-    // Use upsert so that if the profile row already exists it gets updated; otherwise, it inserts a new row.
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({
-        id: user!.id, // Use the authenticated user's id as the primary key
+    try {
+      await apiService.createProfile({
+        id: user!.id,
         first_name: firstName,
         last_name: lastName,
         username: username,
         profile_completed: true,
       });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      // Redirect to home (or another dashboard page) upon success.
       navigate('/');
+    } catch (error: any) {
+      alert(error.response?.data?.detail || 'Failed to create profile');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
