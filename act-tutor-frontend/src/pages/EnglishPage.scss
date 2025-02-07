@@ -1,0 +1,128 @@
+.english-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+
+  .directions {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+
+    h3 {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    p {
+      line-height: 1.6;
+      color: #555;
+    }
+  }
+
+  .content-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .passage-section {
+    padding: 30px;
+    background-color: #fff;
+    border-right: 1px solid #eee;
+    display: flex;
+    gap: 15px;
+
+    .passage-number {
+      font-weight: bold;
+      color: #333;
+      font-size: 1.2em;
+    }
+
+    .passage-content {
+      h2 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .passage-text {
+        line-height: 1.8;
+        color: #444;
+        font-size: 1.1em;
+      }
+    }
+  }
+
+  .questions-section {
+    padding: 30px;
+    background-color: #fff;
+
+    .question-container {
+      margin-bottom: 30px;
+      display: flex;
+      gap: 15px;
+
+      .question-number {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .question-content {
+        flex: 1;
+
+        .question-text {
+          margin-bottom: 15px;
+          color: #333;
+          line-height: 1.6;
+        }
+
+        .options {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+
+          .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+
+            &:hover {
+              background-color: #f8f9fa;
+            }
+
+            input[type="radio"] {
+              margin: 0;
+            }
+
+            span {
+              color: #444;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .english-page {
+    .content-container {
+      grid-template-columns: 1fr;
+    }
+
+    .passage-section {
+      border-right: none;
+      border-bottom: 1px solid #eee;
+    }
+  }
+} 

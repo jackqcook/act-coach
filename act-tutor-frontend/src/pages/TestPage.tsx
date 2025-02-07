@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useDatabase } from '../hooks/useDatabase';
+import { useNavigate } from 'react-router-dom';
+import './TestPage.scss';
 
 // Define types for better type safety
 interface Question {
@@ -22,10 +24,11 @@ interface TestState {
   score?: number;
 }
 
-const CATEGORIES = ['math', 'geography', 'reading', 'science'];
+const CATEGORIES = ['english', 'math', 'geography', 'reading', 'science'];
 const QUESTION_COUNTS = [5, 10, 15, 20, 25];
 
 const TestPage: React.FC = () => {
+  const navigate = useNavigate();
   // Configuration state
   const [isConfiguring, setIsConfiguring] = useState(true);
   const [config, setConfig] = useState<TestConfig>({
@@ -49,21 +52,25 @@ const TestPage: React.FC = () => {
 
   // Generate test based on configuration
   const handleStartTest = async () => {
-    try {
-      const allQuestions = await getQuestions(config.category);
-      // Randomly select questions based on questionCount
-      const selectedQuestions = [...allQuestions]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, config.questionCount);
+    if (config.category === 'english') {
+      navigate('/english');
+    } else {
+      try {
+        const allQuestions = await getQuestions(config.category);
+        // Randomly select questions based on questionCount
+        const selectedQuestions = [...allQuestions]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, config.questionCount);
 
-      setTestState({
-        questions: selectedQuestions,
-        answers: {},
-        isSubmitted: false,
-      });
-      setIsConfiguring(false);
-    } catch (error) {
-      console.error('Error generating test:', error);
+        setTestState({
+          questions: selectedQuestions,
+          answers: {},
+          isSubmitted: false,
+        });
+        setIsConfiguring(false);
+      } catch (error) {
+        console.error('Error generating test:', error);
+      }
     }
   };
 
@@ -102,18 +109,17 @@ const TestPage: React.FC = () => {
 
   if (isConfiguring) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Configure Your ACT Practice Test</h1>
-        
-        <div className="space-y-4 mb-6">
-          <div>
-            <label className="block mb-2">Select Category:</label>
+      <div className="test-page">
+        <div className="test-setup">
+          <h2>Configure Your ACT Practice Test</h2>
+          
+          <div className="form-group">
+            <label>Select Category:</label>
             <select
-              className="w-full p-2 border rounded"
               value={config.category}
               onChange={(e) => handleConfigChange('category', e.target.value)}
             >
-              <option value="">All Categories</option>
+              <option value="">Select a Category</option>
               {CATEGORIES.map(category => (
                 <option key={category} value={category}>
                   {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -122,10 +128,9 @@ const TestPage: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label className="block mb-2">Number of Questions:</label>
+          <div className="form-group">
+            <label>Number of Questions:</label>
             <select
-              className="w-full p-2 border rounded"
               value={config.questionCount}
               onChange={(e) => handleConfigChange('questionCount', Number(e.target.value))}
             >
@@ -134,14 +139,11 @@ const TestPage: React.FC = () => {
               ))}
             </select>
           </div>
-        </div>
 
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          onClick={handleStartTest}
-        >
-          Start Test
-        </button>
+          <button className="start-button" onClick={handleStartTest}>
+            Start Test
+          </button>
+        </div>
       </div>
     );
   }

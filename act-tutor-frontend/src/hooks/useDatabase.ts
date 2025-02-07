@@ -26,7 +26,7 @@ const mockQuestions = [
       "The impact of technology"
     ],
     correct_answer: "The importance of education",
-    category: "reading"
+    category: "Reading"
   },
   {
     id: 4,

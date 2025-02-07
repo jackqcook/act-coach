@@ -1,0 +1,148 @@
+.math-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+
+  .directions {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+
+    p {
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    ol {
+      margin-left: 20px;
+      margin-top: 10px;
+
+      li {
+        color: #333;
+        line-height: 1.6;
+        margin-bottom: 8px;
+      }
+    }
+  }
+
+  .questions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .question-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      .question-header {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+
+        .question-number {
+          font-weight: bold;
+          color: #333;
+          font-size: 1.1em;
+          min-width: 25px;
+        }
+
+        .question-content {
+          flex: 1;
+
+          .question-text {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1em;
+          }
+
+          .question-image {
+            margin: 15px 0;
+            text-align: center;
+
+            img {
+              max-width: 100%;
+              height: auto;
+              border-radius: 4px;
+            }
+          }
+        }
+      }
+
+      .options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-left: 40px;
+
+        .option {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background-color: #f8f9fa;
+          }
+
+          input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+          }
+
+          span {
+            color: #333;
+            font-size: 1em;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Add support for math equations and symbols
+.math-equation {
+  font-family: 'Times New Roman', Times, serif;
+  font-style: italic;
+}
+
+// Add support for fractions
+.fraction {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  
+  .numerator {
+    border-bottom: 1px solid #333;
+    padding: 0 2px;
+  }
+  
+  .denominator {
+    padding: 0 2px;
+  }
+}
+
+@media (max-width: 768px) {
+  .math-page {
+    .questions-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .question-container {
+      .options {
+        padding-left: 20px;
+      }
+    }
+  }
+} 

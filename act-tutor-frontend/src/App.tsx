@@ -7,6 +7,9 @@ import ProfilePage from './pages/ProfilePage';
 import TestPage from './pages/TestPage';
 import ContactPage from './pages/ContactPage';
 import AuthPage from './pages/AuthPage';
+import ReadingPage from './pages/ReadingPage';
+import EnglishPage from './pages/EnglishPage';
+import MathPage from './pages/MathPage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css';
@@ -33,6 +36,21 @@ const App: React.FC = () => {
                 <TestPage />
               </ProtectedRoute>
             } />           
+            <Route path="/reading" element={
+              <ProtectedRoute>
+                <ReadingPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/english" element={
+              <ProtectedRoute>
+                <EnglishPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/math" element={
+              <ProtectedRoute>
+                <MathPage />
+              </ProtectedRoute>
+            } />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/complete-profile" element={
