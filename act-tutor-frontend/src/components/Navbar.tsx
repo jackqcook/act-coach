@@ -17,7 +17,6 @@ const Navbar: React.FC = () => {
         {user ? (
           <>
             <Link to="/test">Practice Tests</Link>
-            <Link to="/contact">Contact</Link>
             <Link to="/profile">Profile</Link>
           </>
         ) : (
