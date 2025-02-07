@@ -10,6 +10,7 @@ import AuthPage from './pages/AuthPage';
 import ReadingPage from './pages/ReadingPage';
 import EnglishPage from './pages/EnglishPage';
 import MathPage from './pages/MathPage';
+import SciencePage from './pages/SciencePage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
 import { ProtectedRoute } from './components/ProtectedRoute'
 import './App.css';
@@ -49,6 +50,11 @@ const App: React.FC = () => {
             <Route path="/math" element={
               <ProtectedRoute>
                 <MathPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/science" element={
+              <ProtectedRoute>
+                <SciencePage />
               </ProtectedRoute>
             } />
             <Route path="/contact" element={<ContactPage />} />
