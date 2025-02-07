@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from ..models.user import UserCreate, UserLogin, UserResponse
+from ..models.user import UserCreate, UserLogin
 from ..database import supabase
 
 router = APIRouter()
@@ -12,9 +12,10 @@ async def signup(user: UserCreate):
             "email": user.email,
             "password": user.password
         })
-        return response.dict()
+        return response.model_dump()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/login", response_model=dict)
 async def login(user: UserLogin):
@@ -24,9 +25,10 @@ async def login(user: UserLogin):
             "email": user.email,
             "password": user.password
         })
-        return response.dict()
+        return response.model_dump()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/logout")
 async def logout():
