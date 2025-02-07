@@ -54,6 +54,12 @@ const TestPage: React.FC = () => {
   const handleStartTest = async () => {
     if (config.category === 'english') {
       navigate('/english');
+    } else if (config.category === 'math') {
+      navigate('/math');
+    } else if (config.category === 'reading') {
+      navigate('/reading');
+    } else if (config.category === 'science') {
+      navigate('/science');
     } else {
       try {
         const allQuestions = await getQuestions(config.category);
