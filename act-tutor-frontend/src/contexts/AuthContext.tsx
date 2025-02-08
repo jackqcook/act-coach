@@ -1,10 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { apiService } from '../services/api.service'
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { supabase } from '../supabaseClient'
 
 interface User {
   id: string
-  email: string
-  // Add other user properties you need
+  email: string | undefined
+  role?: string
 }
 
 interface AuthContextType {
@@ -16,7 +16,7 @@ interface AuthContextType {
   signOut: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType)
+export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
@@ -24,70 +24,106 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check if user is logged in on mount
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('token')
-        if (token) {
-          // Verify token with backend
-          const response = await apiService.verifyToken()
-          setUser(response.data.user)
-        }
-      } catch (err) {
-        localStorage.removeItem('token')
-      } finally {
-        setLoading(false)
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session:', session); // Debug log
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          role: session.user.role
+        });
+        console.log('User set:', session.user); // Debug log
+      } else {
+        setUser(null);
+        console.log('No session found'); // Debug log
       }
-    }
-    
-    checkAuth()
-  }, [])
+      setLoading(false);
+    };
 
-  const handleSignInWithPassword = async (email: string, password: string): Promise<void> => {
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          role: session.user.role
+        });
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const signInWithPassword = async (email: string, password: string) => {
     try {
-      const response = await apiService.login({ email, password })
-      setUser(response.data.user)
-      localStorage.setItem('token', response.data.token)
+      setLoading(true)
       setError(null)
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      if (signInError) throw signInError
+      if (data.user && data.session) {
+        setUser({ id: data.user.id, email: data.user.email ?? '' })
+        // Save the access token to localStorage for backend API calls
+        localStorage.setItem('token', data.session.access_token)
+      }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Sign in failed')
+      setError(err.message || 'Sign in failed')
       throw err
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleSignUp = async (email: string, password: string): Promise<void> => {
+  const signUp = async (email: string, password: string) => {
     try {
-      const response = await apiService.signup({ email, password })
-      setUser(response.data.user)
-      localStorage.setItem('token', response.data.token)
+      setLoading(true)
       setError(null)
+      const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
+      if (signUpError) throw signUpError
+      if (data.user && data.session) {
+        setUser({ id: data.user.id, email: data.user.email ?? '' })
+        localStorage.setItem('token', data.session.access_token)
+      }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Sign up failed')
+      setError(err.message || 'Sign up failed')
       throw err
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleSignOut = async (): Promise<void> => {
+  const signOut = async () => {
     try {
-      await apiService.logout()
+      setLoading(true)
+      setError(null)
+      const { error: signOutError } = await supabase.auth.signOut()
+      if (signOutError) throw signOutError
       setUser(null)
       localStorage.removeItem('token')
-      setError(null)
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Sign out failed')
+      setError(err.message || 'Sign out failed')
       throw err
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      error,
-      signInWithPassword: handleSignInWithPassword,
-      signUp: handleSignUp,
-      signOut: handleSignOut
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        signInWithPassword,
+        signUp,
+        signOut
+      }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   )

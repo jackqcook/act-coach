@@ -20,7 +20,7 @@ async def signup(user: UserCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/login", response_model=dict)
+@router.post("/login")
 async def login(user: UserLogin):
     """Login an existing user"""
     try:
@@ -28,9 +28,12 @@ async def login(user: UserLogin):
             "email": user.email,
             "password": user.password
         })
-        return response.model_dump()
+        return {
+            "user": response.user,
+            "token": response.session.access_token
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=401, detail=str(e))
 
 
 @router.post("/logout")

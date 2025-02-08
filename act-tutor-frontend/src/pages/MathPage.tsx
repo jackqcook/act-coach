@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { apiService } from '../services/api.service';
 import { MathQuestion } from '../types/math';
 import './MathPage.scss';
+import { supabase } from '../supabaseClient';
+import { useParams } from 'react-router-dom';
 
 export default function MathPage() {
+    const { sectionId } = useParams();
     const [questions, setQuestions] = useState<MathQuestion[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -12,17 +15,25 @@ export default function MathPage() {
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await apiService.getMathSectionQuestions(1);
-                setQuestions(response.data);
+                const { data, error } = await supabase
+                    .from('math_question')
+                    .select('*')
+                    .eq('math_section_id', sectionId);
+                if (error) {
+                    throw error;
+                }
+                setQuestions(data);
             } catch (err: any) {
-                setError(err.response?.data?.detail || 'Failed to fetch questions');
+                setError(err.message || 'Failed to fetch questions');
             } finally {
                 setLoading(false);
             }
         };
         
-        fetchQuestions();
-    }, []);
+        if (sectionId) {
+            fetchQuestions();
+        }
+    }, [sectionId]);
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
