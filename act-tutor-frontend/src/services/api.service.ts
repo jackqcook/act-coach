@@ -28,4 +28,7 @@ export const apiService = {
 
   verifyToken: () => 
     api.get('/auth/verify'),
+
+  getMathSectionQuestions: (sectionId: number) => 
+    api.get(`/math/sections/${sectionId}/questions`),
 }; 
