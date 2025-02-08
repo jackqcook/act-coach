@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from ..models.user import UserCreate, UserLogin
+from ..models.user import UserCreate, UserLogin, UserResponse
 from ..database import supabase
 
 router = APIRouter()
 
-@router.post("/signup", response_model=dict)
+@router.post("/signup", response_model=UserResponse)
 async def signup(user: UserCreate):
     """Register a new user"""
     try:
@@ -12,7 +12,10 @@ async def signup(user: UserCreate):
             "email": user.email,
             "password": user.password
         })
-        return response.model_dump()
+        return UserResponse(
+            id=response.user.id,
+            email=response.user.email
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

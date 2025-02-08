@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth, users
+from app.routes import auth, users, math_section
 from app.config import settings
 
 # Initialize FastAPI app
@@ -18,6 +18,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(math_section.router, prefix="/math", tags=["math"])
 
 # Health check route
 @app.get("/")
