@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MathSection } from "../types/math";
+import { MathSection, Difficulty } from "../types/math";
 import { supabase } from '../supabaseClient';
 import { apiService } from "../services/api.service";
 import { useAuth } from "../contexts/AuthContext";
-
-type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
 const getDifficultyStyle = (difficulty: Difficulty) => {
     switch (difficulty) {
@@ -96,7 +94,7 @@ export default function MathSectionsPage() {
                             <h2 className="text-xl font-bold text-gray-900">
                                 Section {section.section_id}
                             </h2>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyStyle(section.difficulty as Difficulty)}`}>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyStyle(section.difficulty)}`}>
                                 {section.difficulty}
                             </span>
                         </div>

@@ -13,10 +13,12 @@ export interface MathQuestion {
     answer: string;
 }
 
+export type Difficulty = 'Easy' | 'Medium' | 'Hard';
+
 export interface MathSection {
     section_id: number;
     test_id: number;
-    difficulty: number;
+    difficulty: Difficulty;
     num_questions: number;
     created_at: string;
 } 
