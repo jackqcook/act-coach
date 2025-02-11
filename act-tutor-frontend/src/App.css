@@ -1,8 +1,6 @@
 #root {
   margin: 0 auto;
-  text-align: center;
   width: 100%;
-  padding: 0;
 }
 
 .logo {
@@ -42,10 +40,10 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f9;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  background-color: #f9fafb;
 }
 
 nav {
@@ -79,7 +77,36 @@ p {
   min-height: 100vh;
 }
 
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-content {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .content {
-  padding-top: 80px; /* Add padding to account for fixed navbar */
-  min-height: calc(100vh - 80px);
+  padding-top: 4rem;
+  min-height: calc(100vh - 4rem);
 }
