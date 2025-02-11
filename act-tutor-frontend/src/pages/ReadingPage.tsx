@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDatabase } from '../hooks/useDatabase';
-import './ReadingPage.scss';
 
 interface Question {
   id: number;
@@ -27,7 +26,6 @@ const ReadingPage: React.FC = () => {
     const fetchPassage = async () => {
       try {
         const questions = await getQuestions('reading');
-        // Transform questions into passage format
         if (questions.length > 0) {
           const passage: Passage = {
             id: 1,
@@ -52,43 +50,66 @@ const ReadingPage: React.FC = () => {
     }));
   };
 
-  if (!currentPassage) return <div>Loading...</div>;
+  if (!currentPassage) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  );
 
   return (
-    <div className="reading-page">
-      <div className="directions">
-        <h3>DIRECTIONS:</h3>
-        <p>There are several passages in this test. Each passage is accompanied by several questions. After reading a passage, choose the best answer to each question and fill in the corresponding oval on your answer document. You may refer to the passages as often as necessary.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="bg-gray-50 rounded-lg p-6 mb-8 shadow-sm">
+        <h3 className="text-xl font-bold text-gray-900 mb-3">DIRECTIONS:</h3>
+        <p className="text-gray-700 leading-relaxed">
+          There are several passages in this test. Each passage is accompanied by several questions. 
+          After reading a passage, choose the best answer to each question and fill in the corresponding 
+          oval on your answer document. You may refer to the passages as often as necessary.
+        </p>
       </div>
 
-      <div className="content-container">
-        <div className="passage-section">
-          <div className="passage-number">1.</div>
-          <div className="passage-content">
-            <h2>{currentPassage.title}</h2>
-            <div className="passage-text">{currentPassage.content}</div>
+      <div className="grid lg:grid-cols-2 gap-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex gap-4">
+            <span className="text-lg font-bold text-gray-700">1.</span>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">{currentPassage.title}</h2>
+              <div className="prose max-w-none text-gray-700 leading-relaxed">
+                {currentPassage.content}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="questions-section">
+        <div className="space-y-6">
           {currentPassage.questions.map((question, index) => (
-            <div key={question.id} className="question-container">
-              <div className="question-number">{index + 1}.</div>
-              <div className="question-content">
-                <p className="question-text">{question.question_text}</p>
-                <div className="options">
-                  {question.options.map((option, optionIndex) => (
-                    <label key={optionIndex} className="option">
-                      <input
-                        type="radio"
-                        name={`question-${question.id}`}
-                        value={option}
-                        checked={selectedAnswers[question.id] === option}
-                        onChange={() => handleAnswerSelect(question.id, option)}
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
+            <div 
+              key={question.id} 
+              className="bg-white rounded-lg shadow-md p-6"
+            >
+              <div className="flex gap-4">
+                <span className="text-lg font-bold text-gray-700">{index + 1}.</span>
+                <div className="flex-1">
+                  <p className="text-gray-800 mb-4 leading-relaxed">
+                    {question.question_text}
+                  </p>
+                  <div className="space-y-3">
+                    {question.options.map((option, optionIndex) => (
+                      <label 
+                        key={optionIndex} 
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name={`question-${question.id}`}
+                          value={option}
+                          checked={selectedAnswers[question.id] === option}
+                          onChange={() => handleAnswerSelect(question.id, option)}
+                          className="h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                        />
+                        <span className="text-gray-700">{option}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
