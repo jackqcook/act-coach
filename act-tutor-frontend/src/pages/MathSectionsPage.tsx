@@ -4,6 +4,8 @@ import { MathSection, Difficulty } from "../types/math";
 import { supabase } from '../supabaseClient';
 import { apiService } from "../services/api.service";
 import { useAuth } from "../contexts/AuthContext";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorMessage from "../components/ErrorMessage";
 
 const getDifficultyStyle = (difficulty: Difficulty) => {
     switch (difficulty) {
@@ -44,38 +46,27 @@ export default function MathSectionsPage() {
         fetchSections();
     }, [user]);
 
-    if (authLoading || loading) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-    );
+    if (authLoading || loading) {
+        return <LoadingSpinner />;
+    }
 
-    if (!user) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Required</h2>
-                <p className="text-gray-600">Please log in to view math sections.</p>
-            </div>
-        </div>
-    );
+    if (!user) {
+        return <ErrorMessage 
+            title="Access Required" 
+            message="Please log in to view math sections." 
+        />;
+    }
 
-    if (error) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-                <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
-                <p className="text-gray-600">{error}</p>
-            </div>
-        </div>
-    );
+    if (error) {
+        return <ErrorMessage message={error} />;
+    }
 
-    if (!sections.length) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">No Sections Available</h2>
-                <p className="text-gray-600">Please check back later for available sections.</p>
-            </div>
-        </div>
-    );
+    if (!sections.length) {
+        return <ErrorMessage 
+            title="No Sections Available" 
+            message="Please check back later for available sections." 
+        />;
+    }
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
